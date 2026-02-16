@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant browser
+    participant server
+
+    Add something and click "Save"
+
+    browser->>browser: JS handles click event
+    browser->>browser: Prevent form default submit
+    browser->>browser: Create note object (content + date)
+    browser->>browser: Add note to local state and re-render UI
+
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+    activate server
+    Note right of server: Server stores the new note
+    server-->>browser: 201 Created (JSON response)
+    deactivate server
+
+    Note right of browser: No page reload — SPA stays active

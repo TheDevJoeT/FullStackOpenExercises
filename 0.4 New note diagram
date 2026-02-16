@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant browser
+    participant server
+
+    Type a note and click "Save"
+
+    browser->>browser: JS event handler intercepts form submit
+    browser->>browser: Prevent default page reload
+    browser->>browser: Create note object with content + date
+
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note
+    activate server
+    Note right of server: Server stores the new note in memory/database
+    server-->>browser: 201 Created (or redirect response)
+    deactivate server
+
+    Note right of browser: Browser updates UI (or reloads notes list)
+
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/data.json
+    activate server
+    server-->>browser: Updated notes JSON
+    deactivate server
+
+    browser->>browser: JS renders updated notes to the page
