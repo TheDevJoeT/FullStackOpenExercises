@@ -22,6 +22,8 @@ const App = () => {
     setVotes(copy); // Update the state with the copy
   };
 
+  const mostVotesIndex = votes.indexOf(Math.max(...votes));
+
   const handleNextAnecdote = () => {
     const randomIndex = Math.floor(Math.random() * anecdotes.length);
     setSelected(randomIndex);
@@ -33,6 +35,10 @@ const App = () => {
       <p>has {votes[selected]} votes</p>
       <button onClick={handleVote}>vote</button>
       <button onClick={handleNextAnecdote}>next anecdote</button>
+
+      <h1>Anecdote with most votes</h1>
+      <p>{anecdotes[mostVotesIndex]}</p>
+      <p>has {votes[mostVotesIndex]} votes</p>
     </div>
   );
 };
