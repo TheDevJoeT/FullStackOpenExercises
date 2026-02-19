@@ -11,7 +11,9 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
+
   const [notification, setNotification] = useState(null);
+  const [notificationType, setNotificationType] = useState("success");
 
   useEffect(() => {
     personService.getAll().then((initialPersons) => {
@@ -19,8 +21,10 @@ const App = () => {
     });
   }, []);
 
-  const showNotification = (message) => {
+  const showNotification = (message, type = "success") => {
     setNotification(message);
+    setNotificationType(type);
+
     setTimeout(() => {
       setNotification(null);
     }, 5000);
@@ -33,7 +37,6 @@ const App = () => {
       (person) => person.name === newName
     );
 
-    
     if (existingPerson) {
       const confirmUpdate = window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
@@ -58,17 +61,29 @@ const App = () => {
           );
 
           showNotification(
-            `Updated ${returnedPerson.name}`
+            `Updated ${returnedPerson.name}`,
+            "success"
           );
 
           setNewName("");
           setNewNumber("");
+        })
+        .catch(() => {
+          showNotification(
+            `Information of ${existingPerson.name} has already been removed from server`,
+            "error"
+          );
+
+          setPersons((prev) =>
+            prev.filter(
+              (person) => person.id !== existingPerson.id
+            )
+          );
         });
 
       return;
     }
 
-    
     const newPerson = {
       name: newName,
       number: newNumber,
@@ -78,7 +93,8 @@ const App = () => {
       setPersons((prev) => prev.concat(returnedPerson));
 
       showNotification(
-        `Added ${returnedPerson.name}`
+        `Added ${returnedPerson.name}`,
+        "success"
       );
 
       setNewName("");
@@ -107,7 +123,10 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
 
-      <Notification message={notification} />
+      <Notification
+        message={notification}
+        type={notificationType}
+      />
 
       <Filter filter={filter} onChange={handleFilterChange} />
 
@@ -123,7 +142,10 @@ const App = () => {
 
       <h3>Numbers</h3>
 
-      <Persons persons={personsToShow} handleDelete={handleDelete} />
+      <Persons
+        persons={personsToShow}
+        handleDelete={handleDelete}
+      />
     </div>
   );
 };
