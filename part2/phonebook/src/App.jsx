@@ -1,47 +1,9 @@
 import { useState, useEffect } from "react";
 import personService from "./services/persons";
 
-const Filter = ({ filter, onChange }) => (
-  <div>
-    filter shown with
-    <input value={filter} onChange={onChange} />
-  </div>
-);
-
-const PersonForm = ({
-  onSubmit,
-  newName,
-  newNumber,
-  onNameChange,
-  onNumberChange,
-}) => (
-  <form onSubmit={onSubmit}>
-    <div>
-      name:
-      <input value={newName} onChange={onNameChange} />
-    </div>
-    <div>
-      number:
-      <input value={newNumber} onChange={onNumberChange} />
-    </div>
-    <div>
-      <button type="submit">add</button>
-    </div>
-  </form>
-);
-
-const Persons = ({ persons, handleDelete }) => (
-  <ul>
-    {persons.map((person) => (
-      <li key={person.id}>
-        {person.name} {person.number}
-        <button onClick={() => handleDelete(person.id, person.name)}>
-          delete
-        </button>
-      </li>
-    ))}
-  </ul>
-);
+import Filter from "./components/Filter";
+import PersonForm from "./components/PersonForm";
+import Persons from "./components/Persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -62,7 +24,6 @@ const App = () => {
       (person) => person.name === newName
     );
 
-    // 🔥 If person exists → UPDATE
     if (existingPerson) {
       const confirmUpdate = window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
@@ -92,7 +53,6 @@ const App = () => {
       return;
     }
 
-    // 🆕 Otherwise create new person
     const newPerson = {
       name: newName,
       number: newNumber,
