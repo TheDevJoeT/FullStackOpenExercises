@@ -30,11 +30,14 @@ const PersonForm = ({
   </form>
 );
 
-const Persons = ({ persons }) => (
+const Persons = ({ persons, handleDelete }) => (
   <ul>
     {persons.map((person) => (
       <li key={person.id}>
         {person.name} {person.number}
+        <button onClick={() => handleDelete(person.id, person.name)}>
+          delete
+        </button>
       </li>
     ))}
   </ul>
@@ -55,7 +58,9 @@ const App = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const nameExists = persons.some((person) => person.name === newName);
+    const nameExists = persons.some(
+      (person) => person.name === newName
+    );
 
     if (nameExists) {
       alert(`${newName} is already added to phonebook`);
@@ -68,16 +73,26 @@ const App = () => {
     };
 
     personService.create(newPerson).then((returnedPerson) => {
-      setPersons(persons.concat(returnedPerson));
+      setPersons((prev) => prev.concat(returnedPerson));
       setNewName("");
       setNewNumber("");
+    });
+  };
+
+  const handleDelete = (id, name) => {
+    const confirmDelete = window.confirm(`Delete ${name}?`);
+
+    if (!confirmDelete) return;
+
+    personService.remove(id).then(() => {
+      setPersons((prev) => prev.filter((person) => person.id !== id));
     });
   };
 
   const handleFilterChange = (e) => setFilter(e.target.value);
 
   const personsToShow = persons.filter((person) =>
-    person.name.toLowerCase().includes(filter.toLowerCase()),
+    person.name.toLowerCase().includes(filter.toLowerCase())
   );
 
   return (
@@ -98,7 +113,7 @@ const App = () => {
 
       <h3>Numbers</h3>
 
-      <Persons persons={personsToShow} />
+      <Persons persons={personsToShow} handleDelete={handleDelete} />
     </div>
   );
 };
