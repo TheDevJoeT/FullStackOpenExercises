@@ -4,18 +4,27 @@ import personService from "./services/persons";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     personService.getAll().then((initialPersons) => {
       setPersons(initialPersons);
     });
   }, []);
+
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,6 +33,7 @@ const App = () => {
       (person) => person.name === newName
     );
 
+    
     if (existingPerson) {
       const confirmUpdate = window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
@@ -46,6 +56,11 @@ const App = () => {
                 : person
             )
           );
+
+          showNotification(
+            `Updated ${returnedPerson.name}`
+          );
+
           setNewName("");
           setNewNumber("");
         });
@@ -53,6 +68,7 @@ const App = () => {
       return;
     }
 
+    
     const newPerson = {
       name: newName,
       number: newNumber,
@@ -60,6 +76,11 @@ const App = () => {
 
     personService.create(newPerson).then((returnedPerson) => {
       setPersons((prev) => prev.concat(returnedPerson));
+
+      showNotification(
+        `Added ${returnedPerson.name}`
+      );
+
       setNewName("");
       setNewNumber("");
     });
@@ -85,6 +106,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notification message={notification} />
 
       <Filter filter={filter} onChange={handleFilterChange} />
 
