@@ -58,15 +58,41 @@ const App = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const nameExists = persons.some(
+    const existingPerson = persons.find(
       (person) => person.name === newName
     );
 
-    if (nameExists) {
-      alert(`${newName} is already added to phonebook`);
+    // 🔥 If person exists → UPDATE
+    if (existingPerson) {
+      const confirmUpdate = window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      );
+
+      if (!confirmUpdate) return;
+
+      const updatedPerson = {
+        ...existingPerson,
+        number: newNumber,
+      };
+
+      personService
+        .update(existingPerson.id, updatedPerson)
+        .then((returnedPerson) => {
+          setPersons((prev) =>
+            prev.map((person) =>
+              person.id === existingPerson.id
+                ? returnedPerson
+                : person
+            )
+          );
+          setNewName("");
+          setNewNumber("");
+        });
+
       return;
     }
 
+    // 🆕 Otherwise create new person
     const newPerson = {
       name: newName,
       number: newNumber,
@@ -81,11 +107,12 @@ const App = () => {
 
   const handleDelete = (id, name) => {
     const confirmDelete = window.confirm(`Delete ${name}?`);
-
     if (!confirmDelete) return;
 
     personService.remove(id).then(() => {
-      setPersons((prev) => prev.filter((person) => person.id !== id));
+      setPersons((prev) =>
+        prev.filter((person) => person.id !== id)
+      );
     });
   };
 
