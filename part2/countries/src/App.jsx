@@ -49,7 +49,7 @@ const App = () => {
 
 
   return (
-    <div>
+    <div className="container">
       <div>
         find countries{" "}
         <input
@@ -83,7 +83,7 @@ const App = () => {
             )}
 
           {countryToShow && (
-            <div>
+            <div className="country-card">
               <h2>{countryToShow.name.common}</h2>
 
               <div>Capital {countryToShow.capital?.[0]}</div>
@@ -99,7 +99,7 @@ const App = () => {
               <img src={countryToShow.flags.png} alt="flag" width="200" />
 
               {weather && (
-                <div>
+                <div className="weather-box">
                   <h3>Weather in {countryToShow.capital?.[0]}</h3>
 
                   <div>Temperature {weather.main.temp} °C</div>
