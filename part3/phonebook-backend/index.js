@@ -40,6 +40,17 @@ app.get("/info", (request, response) => {
         <p>${date}</p>`);
 });
 
+app.get('/api/persons/:id', (request, response) => {
+    const id = request.params.id;
+    const selectedPerson = persons.find(person => person.id === id);
+
+    if (selectedPerson) {
+        response.json(selectedPerson);
+    } else {
+        response.status(404).end();
+    }
+})
+
 const PORT = 3001;
 
 app.listen(PORT, () => {
