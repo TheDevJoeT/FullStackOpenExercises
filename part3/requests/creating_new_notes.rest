@@ -1,0 +1,10 @@
+POST http://localhost:2030/api/notes
+Content-Type : application/json
+
+{
+    "content": "I'm testing the POST method",
+    "important": true
+}
+
+###
+GET http://localhost:2030/api/notes
