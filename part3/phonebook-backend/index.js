@@ -74,11 +74,6 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
-const generateId = () => {
-  const maxId =
-    persons.length > 0 ? Math.max(...persons.map((p) => Number(p.id))) : 0;
-  return (maxId + 1).toString();
-};
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
@@ -87,18 +82,14 @@ app.post("/api/persons", (request, response) => {
     return response.status(400).json({ error: "name or number is missing" });
   }
 
-  if (persons.find((person) => person.name === body.name)) {
-    return response.status(400).json({ error: "name must be unique" });
-  }
-
-  const newPerson = {
-    id: generateId(),
+  const person = new Person({
     name: body.name,
     number: body.number,
-  };
+  });
 
-  persons = persons.concat(newPerson);
-  response.json(newPerson);
+  person.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });
 });
 
 const PORT = 3001;
