@@ -1,1 +1,7 @@
-DELETE http://localhost:3001/api/persons/699e767dd49c2fa3791957c5
+PUT http://localhost:3001/api/persons/699dad449d759f71f518d86e
+Content-Type: application/json
+
+{
+  "name": "Anna",
+  "number": "999-999"
+}

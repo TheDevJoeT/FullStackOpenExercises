@@ -44,10 +44,12 @@ app.get("/", (request, response) => {
   response.send("<h1>Lesson 3: Phonebook backend</h1>");
 });
 
-app.get("/api/persons", (request, response) => {
-  Person.find({}).then((persons) => {
-    response.json(persons);
-  });
+app.get("/api/persons", (request, response, next) => {
+  Person.find({})
+    .then(persons => {
+      response.json(persons);
+    })
+    .catch(error => next(error));
 });
 
 app.get("/info", (request, response) => {
@@ -77,7 +79,7 @@ app.delete("/api/persons/:id", (request, response, next) => {
 });
 
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
 
   if (!body.name || !body.number) {
@@ -89,10 +91,50 @@ app.post("/api/persons", (request, response) => {
     number: body.number,
   });
 
-  person.save().then((savedPerson) => {
-    response.json(savedPerson);
-  });
+  person
+    .save()
+    .then(savedPerson => {
+      response.json(savedPerson);
+    })
+    .catch(error => next(error));
 });
+
+app.put("/api/persons/:id", (request, response, next) => {
+  const { name, number } = request.body;
+
+  Person.findById(request.params.id)
+    .then(person => {
+      if (!person) {
+        return response.status(404).end();
+      }
+
+      person.name = name;
+      person.number = number;
+
+      return person.save().then(updatedPerson => {
+        response.json(updatedPerson);
+      });
+    })
+    .catch(error => next(error));
+});
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
 
 const PORT = 3001;
 
