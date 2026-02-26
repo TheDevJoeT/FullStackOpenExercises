@@ -1,12 +1,1 @@
-POST http://localhost:3003/api/blogs
-Content-Type: application/json
-
-{
-  "title": "FSO Part 4 is powerful",
-  "author": "Joe",
-  "url": "https://fullstackopen.com",
-  "likes": 10
-}
-
-###
 GET http://localhost:3003/api/blogs
