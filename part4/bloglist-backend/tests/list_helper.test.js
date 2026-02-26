@@ -150,3 +150,50 @@ describe('most blogs', () => {
     })
   })
 })
+
+describe('most likes', () => {
+  const listWithManyBlogs = [
+    {
+      _id: '1',
+      title: 'First blog',
+      author: 'Robert C. Martin',
+      url: 'http://example.com',
+      likes: 5,
+    },
+    {
+      _id: '2',
+      title: 'Second blog',
+      author: 'Robert C. Martin',
+      url: 'http://example.com',
+      likes: 7,
+    },
+    {
+      _id: '3',
+      title: 'Third blog',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://example.com',
+      likes: 10,
+    },
+    {
+      _id: '4',
+      title: 'Fourth blog',
+      author: 'Robert C. Martin',
+      url: 'http://example.com',
+      likes: 3,
+    }
+  ]
+
+  test('returns null for empty list', () => {
+    const result = listHelper.mostLikes([])
+    assert.strictEqual(result, null)
+  })
+
+  test('returns the author whose blogs have most total likes', () => {
+    const result = listHelper.mostLikes(listWithManyBlogs)
+
+    assert.deepStrictEqual(result, {
+      author: 'Robert C. Martin',
+      likes: 15
+    })
+  })
+})
