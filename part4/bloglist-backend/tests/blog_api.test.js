@@ -19,7 +19,7 @@ describe('when there is initially some blogs saved', () => {
     await Blog.deleteMany({})
     await User.deleteMany({})
 
-    // 🔹 Create test user
+    
     const passwordHash = await bcrypt.hash('sekret', 10)
     testUser = new User({
       username: 'root',
@@ -29,21 +29,21 @@ describe('when there is initially some blogs saved', () => {
 
     await testUser.save()
 
-    // 🔹 Login to get token
+    
     const loginResponse = await api
       .post('/api/login')
       .send({ username: 'root', password: 'sekret' })
 
     token = loginResponse.body.token
 
-    // 🔹 Create blogs attached to user
+    
     const blogObjects = helper.initialBlogs.map(blog =>
       new Blog({ ...blog, user: testUser._id })
     )
 
     const savedBlogs = await Blog.insertMany(blogObjects)
 
-    // 🔹 Update user's blogs array
+    
     testUser.blogs = savedBlogs.map(b => b._id)
     await testUser.save()
   })
