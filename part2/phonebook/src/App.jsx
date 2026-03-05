@@ -37,6 +37,7 @@ const App = () => {
       (person) => person.name === newName
     );
 
+    // 🔹 UPDATE EXISTING PERSON
     if (existingPerson) {
       const confirmUpdate = window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
@@ -68,49 +69,79 @@ const App = () => {
           setNewName("");
           setNewNumber("");
         })
-        .catch(() => {
-          showNotification(
-            `Information of ${existingPerson.name} has already been removed from server`,
-            "error"
-          );
+        .catch((error) => {
+          if (error.response && error.response.data.error) {
+            showNotification(
+              error.response.data.error,
+              "error"
+            );
+          } else {
+            showNotification(
+              `Information of ${existingPerson.name} has already been removed from server`,
+              "error"
+            );
 
-          setPersons((prev) =>
-            prev.filter(
-              (person) => person.id !== existingPerson.id
-            )
-          );
+            setPersons((prev) =>
+              prev.filter(
+                (person) => person.id !== existingPerson.id
+              )
+            );
+          }
         });
 
       return;
     }
 
+    // 🔹 CREATE NEW PERSON
     const newPerson = {
       name: newName,
       number: newNumber,
     };
 
-    personService.create(newPerson).then((returnedPerson) => {
-      setPersons((prev) => prev.concat(returnedPerson));
+    personService
+      .create(newPerson)
+      .then((returnedPerson) => {
+        setPersons((prev) => prev.concat(returnedPerson));
 
-      showNotification(
-        `Added ${returnedPerson.name}`,
-        "success"
-      );
+        showNotification(
+          `Added ${returnedPerson.name}`,
+          "success"
+        );
 
-      setNewName("");
-      setNewNumber("");
-    });
+        setNewName("");
+        setNewNumber("");
+      })
+      .catch((error) => {
+        showNotification(
+          error.response?.data?.error || "Something went wrong",
+          "error"
+        );
+      });
   };
 
   const handleDelete = (id, name) => {
     const confirmDelete = window.confirm(`Delete ${name}?`);
     if (!confirmDelete) return;
 
-    personService.remove(id).then(() => {
-      setPersons((prev) =>
-        prev.filter((person) => person.id !== id)
-      );
-    });
+    personService
+      .remove(id)
+      .then(() => {
+        setPersons((prev) =>
+          prev.filter((person) => person.id !== id)
+        );
+
+        showNotification(`Deleted ${name}`, "success");
+      })
+      .catch(() => {
+        showNotification(
+          `Information of ${name} has already been removed from server`,
+          "error"
+        );
+
+        setPersons((prev) =>
+          prev.filter((person) => person.id !== id)
+        );
+      });
   };
 
   const handleFilterChange = (e) => setFilter(e.target.value);
