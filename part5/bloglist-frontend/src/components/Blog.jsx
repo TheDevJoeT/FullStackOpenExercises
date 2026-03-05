@@ -1,28 +1,28 @@
-import { useState } from "react";
+import { useState } from 'react'
 
 const Blog = ({ blog, likeBlog, deleteBlog, user }) => {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(false)
 
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
-    border: "solid",
+    border: 'solid',
     borderWidth: 1,
     marginBottom: 5
-  };
+  }
 
   const toggleVisibility = () => {
-    setVisible(!visible);
-  };
+    setVisible(!visible)
+  }
 
-  const isOwner = blog.user?.username === user?.username;
+  const isOwner = blog.user?.username === user?.username
 
   return (
     <div style={blogStyle}>
       <div>
         {blog.title} {blog.author}
         <button onClick={toggleVisibility}>
-          {visible ? "hide" : "view"}
+          {visible ? 'hide' : 'view'}
         </button>
       </div>
 
@@ -45,7 +45,7 @@ const Blog = ({ blog, likeBlog, deleteBlog, user }) => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Blog;
+export default Blog
