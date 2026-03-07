@@ -1,19 +1,8 @@
-POST http://localhost:3003/api/login
+POST http://localhost:3003/api/users
 Content-Type: application/json
 
 {
-  "username": "joe",
-  "password": "mypassword"
-}
-
-###
-
-POST http://localhost:3003/api/blogs
-Content-Type: application/json
-
-{
-  "title": "Secure Blog",
-  "author": "Joe",
-  "url": "http://secure.com",
-  "likes": 5
+  "username": "mluukkai",
+  "name": "Matti Luukkainen",
+  "password": "salainen"
 }

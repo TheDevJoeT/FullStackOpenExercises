@@ -15,10 +15,12 @@ const Blog = ({ blog, likeBlog, deleteBlog, user }) => {
     setVisible(!visible)
   }
 
+  console.log('Blog Object', blog)
+  console.log('Logged user', user)
   const isOwner = blog.user?.username === user?.username
 
   return (
-    <div style={blogStyle}>
+    <div className="blog" style={blogStyle}>
       <div>
         {blog.title} {blog.author}
         <button onClick={toggleVisibility}>
