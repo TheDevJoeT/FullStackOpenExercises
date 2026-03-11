@@ -33,7 +33,17 @@
     {
       "id": "12be",
       "content": "Test for adding a new anecdote with json server",
-      "votes": 0
+      "votes": 1
+    },
+    {
+      "id": "fe74",
+      "content": "Test note for exercise 6.17",
+      "votes": 5
+    },
+    {
+      "id": "6562",
+      "content": "Test note for exercise 6.19",
+      "votes": 3
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
