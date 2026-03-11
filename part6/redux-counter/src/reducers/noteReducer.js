@@ -1,39 +1,47 @@
-const noteReducer = (state = [], action) => {
-  switch (action.type) {
-    case "NEW_NOTE":
-      return state.concat(action.payload);
-    case "TOGGLE_IMPORTANCE": {
-      const id = action.payload.id;
+import { createSlice, current } from "@reduxjs/toolkit";
+import noteService from "../services/notes";
+
+const initialState = [];
+
+const noteSlice = createSlice({
+  name: "notes",
+  initialState,
+  reducers: {
+    createNote(state, action) {
+      state.push(action.payload);
+    },
+    toggleImportanceOf(state, action) {
+      const id = action.payload;
+      console.log("Before:", current(state));
       const noteToChange = state.find((n) => n.id === id);
       const changedNote = {
         ...noteToChange,
         important: !noteToChange.important,
       };
+      console.log("After:", current(state));
       return state.map((note) => (note.id !== id ? note : changedNote));
-    }
-    default:
-      return state;
-  }
-};
-
-const generateId = () => Number((Math.random() * 1000000).toFixed(0));
-
-export const createNote = (content) => {
-  return {
-    type: "NEW_NOTE",
-    payload: {
-      content,
-      important: "false",
-      id: generateId(),
     },
+    setNotes(state, action) {
+      return action.payload;
+    },
+  },
+});
+
+const { createNote, setNotes } = noteSlice.actions;
+
+export const initializeNotes = () => {
+  return async (dispatch) => {
+    const notes = await noteService.getAll();
+    dispatch(setNotes(notes));
   };
 };
 
-export const toggleImportanceOf = (id) => {
-  return {
-    type: "TOGGLE_IMPORTANCE",
-    payload: { id },
+export const appendNote = (content) => {
+  return async (dispatch) => {
+    const newNote = await noteService.createNew(content);
+    dispatch(createNote(newNote));
   };
 };
 
-export default noteReducer;
+export const { toggleImportanceOf } = noteSlice.actions;
+export default noteSlice.reducer;
