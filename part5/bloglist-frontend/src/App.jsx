@@ -1,168 +1,213 @@
-import { useState, useEffect, useRef } from 'react'
-import Blog from './components/Blog'
-import blogService from './services/blogs'
-import loginService from './services/login'
-import Notification from './components/Notification'
-import Togglable from './components/Togglable'
-import BlogForm from './components/BlogForm'
+import { useState, useEffect, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { ListGroup, Container, Form, Button, Card } from "react-bootstrap";
+
+import blogService from "./services/blogs";
+import loginService from "./services/login";
+import Notification from "./components/Notification";
+import Togglable from "./components/Togglable";
+import BlogForm from "./components/BlogForm";
+import Users from "./components/Users";
+import User from "./components/User";
+import BlogView from "./components/BlogView";
+import NavBar from "./components/NavBar";
+
+import {
+  setNotification,
+  clearNotification,
+} from "./reducers/notificationReducer";
+
+import {
+  setBlogs,
+  appendBlog,
+  updateBlog,
+  removeBlog,
+} from "./reducers/blogReducer";
+
+import { setUser, clearUser } from "./reducers/userReducer";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
-  const [message, setMessage] = useState(null)
-  const [errorMessage, setErrorMessage] = useState(null)
-  const blogFormRef = useRef()
+  const blogs = useSelector((state) => state.blogs);
+  const user = useSelector((state) => state.user);
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const blogFormRef = useRef();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs))
-  }, [])
+    blogService.getAll().then((blogs) => dispatch(setBlogs(blogs)));
+  }, [dispatch]);
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
+    const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
 
     if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
+      const storedUser = JSON.parse(loggedUserJSON);
+      dispatch(setUser(storedUser));
+      blogService.setToken(storedUser.token);
     }
-  }, [])
+  }, [dispatch]);
 
   const handleLogin = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
     try {
       const user = await loginService.login({
         username,
         password,
-      })
+      });
 
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
+      window.localStorage.setItem("loggedBlogappUser", JSON.stringify(user));
 
-      blogService.setToken(user.token)
-      setUser(user)
+      blogService.setToken(user.token);
+      dispatch(setUser(user));
 
-      setUsername('')
-      setPassword('')
+      setUsername("");
+      setPassword("");
     } catch (exception) {
-      console.error('Login failed:', exception)
-      setErrorMessage('wrong username or password')
-
+      dispatch(setNotification("wrong username or password"));
       setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
+        dispatch(clearNotification());
+      }, 5000);
     }
-  }
+  };
 
   const handleLogout = () => {
-    window.localStorage.removeItem('loggedBlogappUser')
-    setUser(null)
-  }
+    window.localStorage.removeItem("loggedBlogappUser");
+    dispatch(clearUser());
+  };
 
   const addBlog = async (blogObject) => {
-    blogFormRef.current.toggleVisibility()
+    blogFormRef.current.toggleVisibility();
 
-    const returnedBlog = await blogService.create(blogObject)
+    const returnedBlog = await blogService.create(blogObject);
 
-    setBlogs((prevBlogs) => prevBlogs.concat(returnedBlog))
+    dispatch(appendBlog(returnedBlog));
 
-    setMessage(`a new blog ${returnedBlog.title} added`)
+    dispatch(setNotification(`a new blog ${returnedBlog.title} added`));
     setTimeout(() => {
-      setMessage(null)
-    }, 3000)
-  }
+      dispatch(clearNotification());
+    }, 3000);
+  };
 
   const likeBlog = async (blog) => {
     const updatedBlog = {
       ...blog,
       likes: blog.likes + 1,
       user: blog.user.id,
-    }
+    };
 
-    const returnedBlog = await blogService.update(blog.id, updatedBlog)
+    const returnedBlog = await blogService.update(blog.id, updatedBlog);
 
-    setBlogs((prevBlogs) =>
-      prevBlogs.map((b) =>
-        b.id !== blog.id ? b : { ...returnedBlog, user: blog.user },
-      ),
-    )
-  }
+    dispatch(
+      updateBlog({
+        ...returnedBlog,
+        user: blog.user,
+      }),
+    );
+  };
 
   const deleteBlog = async (blog) => {
     const confirmDelete = window.confirm(
       `Remove blog ${blog.title} by ${blog.author}?`,
-    )
+    );
 
-    if (!confirmDelete) return
+    if (!confirmDelete) return;
 
-    await blogService.remove(blog.id)
+    await blogService.remove(blog.id);
 
-    setBlogs((prevBlogs) => prevBlogs.filter((b) => b.id !== blog.id))
-  }
-
-  if (user === null) {
-    return (
-      <div>
-        <Notification message={message || errorMessage} />
-        <h2>Log in to application</h2>
-
-        <form onSubmit={handleLogin}>
-          <div>
-            <label>
-              username
-              <input
-                type="text"
-                value={username}
-                onChange={({ target }) => setUsername(target.value)}
-              />
-            </label>
-          </div>
-
-          <div>
-            <label>
-              password
-              <input
-                type="password"
-                value={password}
-                onChange={({ target }) => setPassword(target.value)}
-              />
-            </label>
-          </div>
-
-          <button type="submit">login</button>
-        </form>
-      </div>
-    )
-  }
+    dispatch(removeBlog(blog.id));
+  };
 
   return (
-    <div>
-      <Notification message={message || errorMessage} />
-      <p>{user.name} logged in</p>
+    <Router>
+      <div>
+        <Notification />
 
-      <button onClick={handleLogout}>logout</button>
+        {user === null ? (
+          <div>
+            <Container className="d-flex justify-content-center mt-5">
+              <Card style={{ width: "25rem" }}>
+                <Card.Body>
+                  <Card.Title className="mb-4 text-center">
+                    Log in to application
+                  </Card.Title>
 
-      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-        <BlogForm createBlog={addBlog} />
-      </Togglable>
+                  <Form onSubmit={handleLogin}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Username</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={username}
+                        onChange={({ target }) => setUsername(target.value)}
+                        placeholder="Enter username"
+                      />
+                    </Form.Group>
 
-      <h2>blogs</h2>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Password</Form.Label>
+                      <Form.Control
+                        type="password"
+                        value={password}
+                        onChange={({ target }) => setPassword(target.value)}
+                        placeholder="Enter password"
+                      />
+                    </Form.Group>
 
-      {blogs
-        .slice()
-        .sort((a, b) => b.likes - a.likes)
-        .map((blog) => (
-          <Blog
-            key={blog.id}
-            blog={blog}
-            likeBlog={likeBlog}
-            deleteBlog={deleteBlog}
-            user={user}
-          />
-        ))}
-    </div>
-  )
-}
+                    <Button variant="primary" type="submit" className="w-100">
+                      Login
+                    </Button>
+                  </Form>
+                </Card.Body>
+              </Card>
+            </Container>
+          </div>
+        ) : (
+          <div>
+            <NavBar user={user} handleLogout={handleLogout} />
 
-export default App
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Container className="mt-3">
+                    <h2>blogs</h2>
+
+                    <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+                      <BlogForm createBlog={addBlog} />
+                    </Togglable>
+
+                    <ListGroup className="mt-3">
+                      {blogs
+                        .slice()
+                        .sort((a, b) => b.likes - a.likes)
+                        .map((blog) => (
+                          <ListGroup.Item
+                            key={blog.id}
+                            action
+                            as={Link}
+                            to={`/blogs/${blog.id}`}
+                          >
+                            {blog.title} {blog.author}
+                          </ListGroup.Item>
+                        ))}
+                    </ListGroup>
+                  </Container>
+                }
+              />
+
+              <Route path="/users" element={<Users />} />
+              <Route path="/users/:id" element={<User />} />
+              <Route path="/blogs/:id" element={<BlogView user={user} />} />
+            </Routes>
+          </div>
+        )}
+      </div>
+    </Router>
+  );
+};
+
+export default App;

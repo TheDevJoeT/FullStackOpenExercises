@@ -1,31 +1,29 @@
-import { useState } from 'react'
+import { useState } from "react";
 
 const Blog = ({ blog, likeBlog, deleteBlog, user }) => {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(false);
 
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
-    border: 'solid',
+    border: "solid",
     borderWidth: 1,
-    marginBottom: 5
-  }
+    marginBottom: 5,
+  };
 
   const toggleVisibility = () => {
-    setVisible(!visible)
-  }
+    setVisible(!visible);
+  };
 
-  console.log('Blog Object', blog)
-  console.log('Logged user', user)
-  const isOwner = blog.user?.username === user?.username
+  console.log("Blog Object", blog);
+  console.log("Logged user", user);
+  const isOwner = blog.user?.username === user?.username;
 
   return (
     <div className="blog" style={blogStyle}>
       <div>
         {blog.title} {blog.author}
-        <button onClick={toggleVisibility}>
-          {visible ? 'hide' : 'view'}
-        </button>
+        <button onClick={toggleVisibility}>{visible ? "hide" : "view"}</button>
       </div>
 
       {visible && (
@@ -39,15 +37,11 @@ const Blog = ({ blog, likeBlog, deleteBlog, user }) => {
 
           <div>{blog.user?.name}</div>
 
-          {isOwner && (
-            <button onClick={() => deleteBlog(blog)}>
-              remove
-            </button>
-          )}
+          {isOwner && <button onClick={() => deleteBlog(blog)}>remove</button>}
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Blog
+export default Blog;

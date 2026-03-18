@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Form, Button } from 'react-bootstrap'
 
 const BlogForm = ({ createBlog }) => {
   const [title, setTitle] = useState('')
@@ -21,44 +22,43 @@ const BlogForm = ({ createBlog }) => {
 
   return (
     <div>
-      <h2>create new</h2>
+      <h2>Create new blog</h2>
 
-      <form onSubmit={addBlog}>
-        <div>
-          <label>
-            title
-            <input
-              type="text"
-              value={title}
-              onChange={({ target }) => setTitle(target.value)}
-            />
-          </label>
-        </div>
+      <Form onSubmit={addBlog}>
+        <Form.Group className="mb-3">
+          <Form.Label>Title</Form.Label>
+          <Form.Control
+            type="text"
+            value={title}
+            onChange={({ target }) => setTitle(target.value)}
+            placeholder="Enter blog title"
+          />
+        </Form.Group>
 
-        <div>
-          <label>
-            author
-            <input
-              type="text"
-              value={author}
-              onChange={({ target }) => setAuthor(target.value)}
-            />
-          </label>
-        </div>
+        <Form.Group className="mb-3">
+          <Form.Label>Author</Form.Label>
+          <Form.Control
+            type="text"
+            value={author}
+            onChange={({ target }) => setAuthor(target.value)}
+            placeholder="Enter author name"
+          />
+        </Form.Group>
 
-        <div>
-          <label>
-            url
-            <input
-              type="text"
-              value={url}
-              onChange={({ target }) => setUrl(target.value)}
-            />
-          </label>
-        </div>
+        <Form.Group className="mb-3">
+          <Form.Label>URL</Form.Label>
+          <Form.Control
+            type="text"
+            value={url}
+            onChange={({ target }) => setUrl(target.value)}
+            placeholder="https://example.com"
+          />
+        </Form.Group>
 
-        <button type="submit">create</button>
-      </form>
+        <Button variant="primary" type="submit">
+          Create
+        </Button>
+      </Form>
     </div>
   )
 }
