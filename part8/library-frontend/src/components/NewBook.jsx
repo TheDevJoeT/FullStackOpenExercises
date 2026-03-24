@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
+import { useState } from "react";
+import { useMutation } from "@apollo/client/react";
+import { gql } from "@apollo/client";
 
 const ADD_BOOK = gql`
   mutation addBook(
@@ -20,25 +20,21 @@ const ADD_BOOK = gql`
       published
     }
   }
-`
+`;
 
-const NewBook = ({ show }) => {
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [published, setPublished] = useState('')
-  const [genre, setGenre] = useState('')
-  const [genres, setGenres] = useState([])
+const NewBook = () => {
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [published, setPublished] = useState("");
+  const [genre, setGenre] = useState("");
+  const [genres, setGenres] = useState([]);
 
   const [addBook] = useMutation(ADD_BOOK, {
-    refetchQueries: ['allBooks', 'allAuthors'],
-  })
-
-  if (!show) {
-    return null
-  }
+    refetchQueries: ["allBooks", "allAuthors"],
+  });
 
   const submit = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
     await addBook({
       variables: {
@@ -47,19 +43,19 @@ const NewBook = ({ show }) => {
         published: Number(published),
         genres,
       },
-    })
+    });
 
-    setTitle('')
-    setPublished('')
-    setAuthor('')
-    setGenres([])
-    setGenre('')
-  }
+    setTitle("");
+    setPublished("");
+    setAuthor("");
+    setGenres([]);
+    setGenre("");
+  };
 
   const addGenre = () => {
-    setGenres(genres.concat(genre))
-    setGenre('')
-  }
+    setGenres(genres.concat(genre));
+    setGenre("");
+  };
 
   return (
     <div>
@@ -68,12 +64,18 @@ const NewBook = ({ show }) => {
       <form onSubmit={submit}>
         <div>
           title
-          <input value={title} onChange={({ target }) => setTitle(target.value)} />
+          <input
+            value={title}
+            onChange={({ target }) => setTitle(target.value)}
+          />
         </div>
 
         <div>
           author
-          <input value={author} onChange={({ target }) => setAuthor(target.value)} />
+          <input
+            value={author}
+            onChange={({ target }) => setAuthor(target.value)}
+          />
         </div>
 
         <div>
@@ -94,12 +96,12 @@ const NewBook = ({ show }) => {
           </button>
         </div>
 
-        <div>genres: {genres.join(' ')}</div>
+        <div>genres: {genres.join(" ")}</div>
 
         <button type="submit">create book</button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default NewBook
+export default NewBook;

@@ -22,7 +22,7 @@ const EDIT_AUTHOR = gql`
   }
 `;
 
-const Authors = ({ show }) => {
+const Authors = () => {
   const result = useQuery(ALL_AUTHORS);
 
   const [name, setName] = useState("");
@@ -32,7 +32,6 @@ const Authors = ({ show }) => {
     refetchQueries: [{ query: ALL_AUTHORS }],
   });
 
-  if (!show) return null;
   if (result.loading) return <div>loading...</div>;
 
   const authors = result.data?.allAuthors || [];

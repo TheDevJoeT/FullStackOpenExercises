@@ -11,12 +11,8 @@ const ALL_BOOKS = gql`
   }
 `;
 
-const Books = ({ show }) => {
+const Books = () => {
   const result = useQuery(ALL_BOOKS);
-
-  if (!show) {
-    return null;
-  }
 
   if (result.loading) {
     return <div>Books Loading ....</div>;
