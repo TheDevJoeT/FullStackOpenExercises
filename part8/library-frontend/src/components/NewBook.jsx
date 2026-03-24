@@ -1,26 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client/react";
-import { gql } from "@apollo/client";
-
-const ADD_BOOK = gql`
-  mutation addBook(
-    $title: String!
-    $author: String!
-    $published: Int!
-    $genres: [String!]!
-  ) {
-    addBook(
-      title: $title
-      author: $author
-      published: $published
-      genres: $genres
-    ) {
-      title
-      author
-      published
-    }
-  }
-`;
+import { ADD_BOOK, ALL_BOOKS, ALL_AUTHORS } from "../queries";
 
 const NewBook = () => {
   const [title, setTitle] = useState("");
@@ -29,12 +9,23 @@ const NewBook = () => {
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
 
-  const [addBook] = useMutation(ADD_BOOK, {
-    refetchQueries: ["allBooks", "allAuthors"],
+  const [addBook, result] = useMutation(ADD_BOOK, {
+    refetchQueries: [
+      { query: ALL_AUTHORS },
+      {
+        query: ALL_BOOKS,
+        variables: { author: null, genre: null },
+      },
+    ],
+    onError: (error) => {
+      console.error(error.message);
+    },
   });
 
   const submit = async (event) => {
     event.preventDefault();
+
+    if (!title || !author || !published) return;
 
     await addBook({
       variables: {
@@ -53,6 +44,7 @@ const NewBook = () => {
   };
 
   const addGenre = () => {
+    if (!genre.trim()) return;
     setGenres(genres.concat(genre));
     setGenre("");
   };
@@ -100,6 +92,9 @@ const NewBook = () => {
 
         <button type="submit">create book</button>
       </form>
+
+      {result.loading && <p>adding book...</p>}
+      {result.error && <p style={{ color: "red" }}>error adding book</p>}
     </div>
   );
 };

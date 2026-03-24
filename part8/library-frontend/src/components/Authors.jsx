@@ -1,26 +1,6 @@
 import { useQuery, useMutation } from "@apollo/client/react";
-import { gql } from "@apollo/client";
+import { ALL_AUTHORS, EDIT_AUTHOR } from "../queries";
 import { useState } from "react";
-
-const ALL_AUTHORS = gql`
-  query {
-    allAuthors {
-      name
-      born
-      bookCount
-    }
-  }
-`;
-
-const EDIT_AUTHOR = gql`
-  mutation editAuthor($name: String!, $setBornTo: Int!) {
-    editAuthor(name: $name, setBornTo: $setBornTo) {
-      name
-      born
-      bookCount
-    }
-  }
-`;
 
 const Authors = () => {
   const result = useQuery(ALL_AUTHORS);
@@ -62,14 +42,12 @@ const Authors = () => {
           <tr>
             <th></th>
             <th>born</th>
-            <th>books</th>
           </tr>
 
           {authors.map((a) => (
             <tr key={a.name}>
               <td>{a.name}</td>
               <td>{a.born}</td>
-              <td>{a.bookCount}</td>
             </tr>
           ))}
         </tbody>
