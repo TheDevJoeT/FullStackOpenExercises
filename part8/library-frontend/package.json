@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@apollo/client": "^4.1.6",
-    "graphql": "^16.13.1",
+    "graphql": "^16.13.2",
+    "graphql-ws": "^6.0.7",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.2"

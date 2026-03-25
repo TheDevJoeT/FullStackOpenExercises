@@ -6,6 +6,8 @@ import { useState } from "react";
 import LoginForm from "./components/LoginForm";
 import { useApolloClient } from "@apollo/client/react";
 import Recommend from "./components/Recommend";
+import { useSubscription } from "@apollo/client/react";
+import { BOOK_ADDED, ALL_BOOKS } from "./queries";
 
 const App = () => {
   const [token, setToken] = useState(
@@ -19,6 +21,31 @@ const App = () => {
     localStorage.clear();
     client.resetStore();
   };
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      const addedBook = data.data.bookAdded;
+
+      alert(`New book added: ${addedBook.title}`);
+
+      client.cache.updateQuery(
+        { query: ALL_BOOKS, variables: { author: null, genre: null } },
+        (existingData) => {
+          if (!existingData) return;
+
+          const alreadyExists = existingData.allBooks.some(
+            (b) => b.id === addedBook.id,
+          );
+
+          if (alreadyExists) return existingData;
+
+          return {
+            allBooks: existingData.allBooks.concat(addedBook),
+          };
+        },
+      );
+    },
+  });
   return (
     <div>
       <div>

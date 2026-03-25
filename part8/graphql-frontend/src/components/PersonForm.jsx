@@ -1,26 +1,7 @@
 import { useState } from "react";
-import { gql } from "@apollo/client";
 import { useMutation } from "@apollo/client/react";
-import { ALL_PERSONS } from "../queries";
-
-const CREATE_PERSON = gql`
-  mutation createPerson(
-    $name: String!
-    $street: String!
-    $city: String!
-    $phone: String
-  ) {
-    addPerson(name: $name, street: $street, city: $city, phone: $phone) {
-      name
-      phone
-      id
-      address {
-        street
-        city
-      }
-    }
-  }
-`;
+import { CREATE_PERSON } from "../queries";
+import { addPersonToCache } from "../utils/apolloCache";
 
 const PersonForm = ({ setError }) => {
   const [name, setName] = useState("");
@@ -30,13 +11,12 @@ const PersonForm = ({ setError }) => {
 
   const [createPerson] = useMutation(CREATE_PERSON, {
     update: (cache, response) => {
-      cache.updateQuery({ query: ALL_PERSONS }, ({ allPersons }) => {
-        return {
-          allPersons: allPersons.concat(response.data.addPerson),
-        };
-      });
+      const addedPerson = response.data.addPerson;
+      addPersonToCache(cache, addedPerson);
     },
-    onError: (error) => setError(error.message),
+    onError: (error) => {
+      setError(error.graphQLErrors?.[0]?.message || "Error creating person");
+    },
   });
 
   const submit = (event) => {

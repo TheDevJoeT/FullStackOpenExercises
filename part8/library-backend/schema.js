@@ -16,10 +16,11 @@ const typeDefs = `#graphql
   }
 
   type Author {
-    name: String!
-    born: Int
-    id: ID!
-  }
+  name: String!
+  born: Int
+  bookCount: Int!
+  id: ID!
+}
 
   type Mutation {
     addBook(
@@ -42,10 +43,6 @@ type Token {
   value: String!
 }
 
-extend type Query {
-  me: User
-}
-
 extend type Mutation {
   createUser(
     username: String!
@@ -56,6 +53,10 @@ extend type Mutation {
     username: String!
     password: String!
   ): Token
+}
+
+type Subscription {
+  bookAdded: Book!
 }
 `;
 

@@ -3,40 +3,49 @@ const Person = require("./models/persons");
 const jwt = require("jsonwebtoken");
 const User = require("./models/user");
 
+const { PubSub } = require("graphql-subscriptions");
+
+const pubsub = new PubSub();
+
 const resolvers = {
   Query: {
     personCount: async () => Person.collection.countDocuments(),
+
     allPersons: async (root, args) => {
       if (!args.phone) {
-        return Person.find({});
+        return Person.find({}).populate("friendOf");
       }
 
-      return Person.find({ phone: { $exists: args.phone === "YES" } });
+      return Person.find({
+        phone: { $exists: args.phone === "YES" },
+      }).populate("friendOf");
     },
+
     findPerson: async (root, args) => Person.findOne({ name: args.name }),
-    me: (root, args, context) => {
-      return context.currentUser;
-    },
+
+    me: (root, args, context) => context.currentUser,
   },
+
   Person: {
-    address: ({ street, city }) => {
-      return {
-        street,
-        city,
-      };
+    address: ({ street, city }) => ({ street, city }),
+
+    friendOf: async (root) => {
+      return User.find({
+        friends: { $in: [root._id] },
+      });
     },
   },
+
   Mutation: {
-    addPerson: async (root, args) => {
+    addPerson: async (root, args, context) => {
       const currentUser = context.currentUser;
 
       if (!currentUser) {
         throw new GraphQLError("not authenticated", {
-          extensions: {
-            code: "UNAUTHENTICATED",
-          },
+          extensions: { code: "UNAUTHENTICATED" },
         });
       }
+
       const nameExists = await Person.exists({ name: args.name });
 
       if (nameExists) {
@@ -64,14 +73,17 @@ const resolvers = {
         });
       }
 
+      pubsub.publish("PERSON_ADDED", {
+        personAdded: person,
+      });
+
       return person;
     },
+
     editNumber: async (root, args) => {
       const person = await Person.findOne({ name: args.name });
 
-      if (!person) {
-        return null;
-      }
+      if (!person) return null;
 
       person.phone = args.phone;
 
@@ -89,6 +101,7 @@ const resolvers = {
 
       return person;
     },
+
     createUser: async (root, args) => {
       const user = new User({ username: args.username });
 
@@ -102,14 +115,13 @@ const resolvers = {
         });
       });
     },
+
     login: async (root, args) => {
       const user = await User.findOne({ username: args.username });
 
       if (!user || args.password !== "secret") {
         throw new GraphQLError("wrong credentials", {
-          extensions: {
-            code: "BAD_USER_INPUT",
-          },
+          extensions: { code: "BAD_USER_INPUT" },
         });
       }
 
@@ -118,19 +130,17 @@ const resolvers = {
         id: user._id,
       };
 
-      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) };
+      return {
+        value: jwt.sign(userForToken, process.env.JWT_SECRET),
+      };
     },
+
     addAsFriend: async (root, args, { currentUser }) => {
       if (!currentUser) {
         throw new GraphQLError("not authenticated", {
           extensions: { code: "UNAUTHENTICATED" },
         });
       }
-
-      const nonFriendAlready = (person) =>
-        !currentUser.friends
-          .map((f) => f._id.toString())
-          .includes(person._id.toString());
 
       const person = await Person.findOne({ name: args.name });
 
@@ -143,13 +153,22 @@ const resolvers = {
         });
       }
 
-      if (nonFriendAlready(person)) {
+      const alreadyFriend = currentUser.friends
+        .map((f) => f._id.toString())
+        .includes(person._id.toString());
+
+      if (!alreadyFriend) {
         currentUser.friends = currentUser.friends.concat(person);
+        await currentUser.save();
       }
 
-      await currentUser.save();
-
       return currentUser;
+    },
+  },
+
+  Subscription: {
+    personAdded: {
+      subscribe: () => pubsub.asyncIterator("PERSON_ADDED"),
     },
   },
 };

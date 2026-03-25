@@ -1,9 +1,11 @@
 const Book = require("./models/book");
 const Author = require("./models/author");
 const { GraphQLError } = require("graphql");
+const { PubSub } = require("graphql-subscriptions");
 
 const jwt = require("jsonwebtoken");
 const User = require("./models/user");
+const pubsub = new PubSub();
 
 const resolvers = {
   Query: {
@@ -31,7 +33,27 @@ const resolvers = {
     },
 
     allAuthors: async () => {
-      return Author.find({});
+      const authors = await Author.find({});
+
+      const counts = await Book.aggregate([
+        {
+          $group: {
+            _id: "$author",
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+
+      return authors.map((author) => {
+        const match = counts.find(
+          (c) => c._id.toString() === author._id.toString(),
+        );
+
+        return {
+          ...author.toObject(),
+          bookCount: match ? match.count : 0,
+        };
+      });
     },
 
     me: (root, args, context) => {
@@ -68,7 +90,13 @@ const resolvers = {
 
         await book.save();
 
-        return book.populate("author");
+        const populatedBook = await book.populate("author");
+
+        pubsub.publish("BOOK_ADDED", {
+          bookAdded: populatedBook,
+        });
+
+        return populatedBook;
       } catch (error) {
         throw new GraphQLError(`Adding book failed: ${error.message}`, {
           extensions: {
@@ -146,6 +174,12 @@ const resolvers = {
       return {
         value: jwt.sign(userForToken, process.env.JWT_SECRET),
       };
+    },
+  },
+
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator("BOOK_ADDED"),
     },
   },
 };
